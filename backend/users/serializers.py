@@ -9,7 +9,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model=User
-        fields=["username","identifier","phone_number"]
+        fields=["username","identifier","phone_number","password"]
 
         extra_kwargs={'password':{'write_only':True}}
     
@@ -17,7 +17,9 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def validate(self,data):
         if "@" in data["identifier"]:
-            data["email"]=data["identifier"]
+            #this is how we can use the drf's builtin validator in differnt places
+            validate_email=serializers.EmailField()
+            data["email"]=validate_email.run_validation(data["identifier"])
 
         else:
             if not re.fullmatch(r'[6-9][0-9]{9}', data["identifier"]):
@@ -27,7 +29,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
         return data
 
-    def create_(self,data):
+    def create(self,data):
 
         data.pop("identifier")
 
